@@ -7,10 +7,10 @@ class Server {
      * Server entry point
      * @param args
      */
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException {
         int portNumber;
         InetAddress host;
-        ServerSocket server;
+        ServerSocket server = null;
 
         if (args.length != 1) {
             System.out.println("Usage:  server <port>");
@@ -27,14 +27,24 @@ class Server {
 
         try {
             server = new ServerSocket(portNumber);
+            server.setReuseAddress(true);
             System.out.println("Server running on port: " + server.getLocalPort());
 
-            ServerThread serverThread = new ServerThread(server);
-            serverThread.start();
+
+            while(true) {
+                Socket client = server.accept();
+                System.out.println("New client connected " + client.getInetAddress().getHostAddress());
+                ClientHandler clientSock = new ClientHandler(client);
+
+                new Thread(clientSock).start();
+            }
         } catch (IOException e) {
             System.out.println("IO exception trying to create server socket");
             e.printStackTrace();
         }
+
+        assert server != null;
+        server.close();
     }
 
     /**
@@ -48,57 +58,45 @@ class Server {
     }
 }
 
-class ServerThread extends Thread implements Runnable {
-    private final ServerSocket server;
 
-    ServerThread(ServerSocket server) {
-        this.server = server;
+
+class ClientHandler implements Runnable {
+    private final Socket client;
+
+    ClientHandler(Socket client) {
+        this.client = client;
     }
 
-    
+    @Override
     public void run() {
-        while(true) {
-            System.out.println("Receiving client request...");
+        PrintWriter out = null;
+        BufferedReader in = null;
 
-            Socket socket;
-            try {
-                socket = server.accept();
-                InputStream is;
-                try {
-                    is = socket.getInputStream();
-                } catch (IOException e) {
-                    System.out.println("Couldn't get input stream from socket");
-                    return;
-                }
-                byte[] buffer = new byte[7];
-                int n;
-                while (true) {
+        try {
+            String line;
 
-                    // read from socket into byte array
-                    try {
-                        n = is.read(buffer);
-                    } catch (IOException e) {
-                        System.out.println("IO exception when reading from socket");
-                        break;
-                    }
+            out = new PrintWriter(client.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
-                    System.out.println("Have read " + n + " bytes from socket");
-                    if (n <= 0) break;
-                    System.out.println(new String(buffer, 0, n));
-                }
-
-                // close stream and socket
-                try {
-                    is.close();
-                    socket.close();
-                } catch (IOException e) {
-                    System.out.println("Couldn't close socket");
-                    return;
-                }
-            } catch (IOException e) {
-                System.out.println("IO exception waiting for client request");
-                return;
+            while ((line = in.readLine()) != null) {
+                System.out.printf("Sent from the client: %s\n", line);
+                out.println(line);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        assert out != null;
+        out.close();
+        try {
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            client.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
