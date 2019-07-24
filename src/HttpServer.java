@@ -3,15 +3,13 @@ import java.io.*;
 import java.util.*;
 
 public class HttpServer {
-    private ArrayList<HttpServerSession> sessions;
-
     public static void main(String args[]) {
         HttpServer server = new HttpServer();
         server.startServer();
     }
 
     private void startServer() {
-        sessions = new ArrayList<HttpServerSession>();
+        ArrayList<HttpServerSession> sessions = new ArrayList<HttpServerSession>();
 
         try {
             ServerSocket server = new ServerSocket(8080);
@@ -37,7 +35,6 @@ public class HttpServer {
 
 class HttpServerSession extends Thread {
     private Socket client;
-    private String filename;
     private String requestedFileName;
 
     HttpServerSession(Socket client) {
@@ -52,21 +49,49 @@ class HttpServerSession extends Thread {
 
 
             if(client.isConnected()) {
-                System.out.println("File requested: " + reader.readLine());
+                String request = reader.readLine();
+
+                System.out.println("Method Type: " + parseMethodType(request));
+                System.out.println("File requested: " + parseRequestFileName(request));
 
                 writer.println("HTTP/1.1 200 OK");
-                writer.println("Server: COMPX202 HTTP Server by Izzudin Anuar");
-                writer.println("Date: " + new Date());;
-                writer.println();
-                writer.write("Hello mello tello");
-                writer.flush();
+                writer.println("Server: Pokemeet Server");
+                writer.println("Date: " + new Date());
+                writer.println("Content-Type: application/json");
 
+                writer.println();
+                writer.println("Method Type: " + parseMethodType(request));
+                writer.println("File requested: " + parseRequestFileName(request));
+                writer.write("{latitude: -117.3232, longitude: 102.233}");
+                writer.flush();
             }
 
             System.out.println("\nClose connection with client...");
             client.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private String parseRequestFileName(String request) {
+        String parts[] = request.split(" ");
+        if(parts.length != 3) {
+            throw new RuntimeException("Does not understand request");
+        } else {
+            String filename = parts[1].substring(1);
+            return filename;
+        }
+    }
+
+    private String parseMethodType(String request) {
+        String method;
+
+        String parts[] = request.split(" ");
+        if(parts.length != 3) {
+            throw new RuntimeException("Does not understand request");
+        } else {
+            method = parts[0];
+            return method;
         }
     }
 }
