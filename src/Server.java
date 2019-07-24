@@ -1,7 +1,9 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 
 class Server {
+    public static ArrayList<RaidRoom> raidRooms = new ArrayList<>();
 
     /**
      * Server entry point
@@ -29,6 +31,7 @@ class Server {
             server = new ServerSocket(portNumber);
             server.setReuseAddress(true);
             System.out.println("Server running on port: " + server.getLocalPort());
+            System.out.println("=====================");
 
 
             while(true) {
@@ -58,8 +61,6 @@ class Server {
     }
 }
 
-
-
 class ClientHandler implements Runnable {
     private final Socket client;
 
@@ -80,6 +81,10 @@ class ClientHandler implements Runnable {
 
             while ((line = in.readLine()) != null) {
                 System.out.printf("Sent from the client: %s\n", line);
+                processClientRequest(line);
+
+//                System.out.println(DataStore.getInstance().raidRooms.size());
+
                 out.println(line);
             }
         } catch (IOException e) {
@@ -98,5 +103,97 @@ class ClientHandler implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void processClientRequest(String request) {
+        System.out.println("Processing client request");
+        String parts[] = request.split("/");
+
+        System.out.println(parts[0]);
+        System.out.println(parts[1]);
+        System.out.println(parts[2]);
+        System.out.println(parts[3]);
+
+        if(parts[1].equals("createRaidRoom")) {
+            RaidRoom raidRoom = new RaidRoom(parts[2], parts[3]);
+            raidRoom.addParticipant(new User(parts[0]));
+
+            System.out.println("Room ID: " + raidRoom.getId());
+
+            DataStore.getInstance().addRaidRoom(raidRoom);
+        } else {
+            System.out.println(parts[1]);
+        }
+
+        System.out.println(DataStore.getInstance().raidRooms.get(0).userList.get(0).getInfo());
+    }
+}
+
+class RaidRoom {
+    private static int count = 0;
+    private final int id;
+    private final String time;
+    private final String location;
+    public ArrayList<User> userList = new ArrayList<>();
+
+    RaidRoom(String location, String time) {
+        this.location = location;
+        this.time = time;
+        count++;
+        this.id = count;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String time() {
+        return time;
+    }
+
+    public String location() {
+        return location;
+    }
+
+    public void addParticipant(User user) {
+        userList.add(user);
+    }
+
+    public String getParticipants() {
+        return userList.toString();
+    }
+}
+
+class User {
+    private final String email;
+    private String latitude = "0";
+    private String longitude = "0";
+
+    User(String email) {
+        this.email = email;
+    }
+
+    public void updateLocation(String latitude, String longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public String getInfo() {
+        return this.email + " " + this.latitude + " " + this.longitude;
+    }
+}
+
+class DataStore {
+    static DataStore object = new DataStore();
+    public ArrayList<RaidRoom> raidRooms = new ArrayList<>();
+
+    private DataStore() {}
+    public static DataStore getInstance() {
+        return object;
+    }
+
+    public void addRaidRoom(RaidRoom room) {
+        System.out.println("adding raid room to data store");
+        raidRooms.add(room);
     }
 }

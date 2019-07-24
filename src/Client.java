@@ -29,7 +29,7 @@ class Client {
         try {
             OutputStream os;
             os = socket.getOutputStream();
-            os.write(("Message Hello Mello Telo").getBytes());  // 11
+            os.write(("izzudinanuar96@gmail.com/createRaidRoom/Uni Mart/10.30PM").getBytes());  // 11
             os.close();
         } catch (IOException e) {
             System.out.println("IO exception trying to write to socket");
