@@ -3,8 +3,6 @@ import java.net.*;
 import java.util.ArrayList;
 
 class Server {
-    public static ArrayList<RaidRoom> raidRooms = new ArrayList<>();
-
     /**
      * Server entry point
      * @param args
@@ -79,18 +77,13 @@ class ClientHandler implements Runnable {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
 
             Request clientRequest = (Request) objectInputStream.readObject();
-            processClientRequest(clientRequest);
-
-            User user = new User("izzudinanuar96@gmail.com");
-            objectOutputStream.writeObject(user);
-
-            System.out.println(clientRequest.getAction());
+            processClientRequest(clientRequest, objectOutputStream);
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    private void processClientRequest(Request request) throws IOException {
+    private void processClientRequest(Request request, ObjectOutputStream objectOutputStream) throws IOException {
         System.out.println("Processing client request");
 
         if(request.getAction().equals("createRaidRoom")) {
@@ -100,6 +93,11 @@ class ClientHandler implements Runnable {
 
             System.out.println("Room created by "+ raidRoom.userList.get(0) + " Room id:" + raidRoom.getId() + " Location: " + raidRoom.getLocation() + " Time: " + raidRoom.getTime());
             DataStore.getInstance().addRaidRoom(raidRoom);
+
+            System.out.println("Sending response to client");
+
+            Response response = new Response("Raid room created", raidRoom);
+            objectOutputStream.writeObject(response);
         } else if(request.getAction().equals("getRaidRooms")) {
 
         }
@@ -189,7 +187,7 @@ class DataStore {
     }
 }
 
-class Response {
+class Response implements Serializable {
     private final String message;
     private final Object object;
 
@@ -205,6 +203,6 @@ class Response {
 
     public Object getObject()
     {
-        return this.getObject();
+        return this.object;
     }
 }
