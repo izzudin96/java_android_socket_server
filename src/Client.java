@@ -3,7 +3,7 @@ import java.net.*;
 
 class Client {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         if (args.length != 2) {
             System.out.println("Usage:  client <host> <port>");
@@ -26,14 +26,54 @@ class Client {
         }
 
         // write to socket using OutputStream
-        try {
-            OutputStream os;
-            os = socket.getOutputStream();
-            os.write(("izzudinanuar96@gmail.com/createRaidRoom/Uni Mart/10.30PM").getBytes());  // 11
-            os.close();
-        } catch (IOException e) {
-            System.out.println("IO exception trying to write to socket");
-            return;
-        }
+        OutputStream outputStream = socket.getOutputStream();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
+        String[] parameter = {"Uni Mart", "11.30AM"};
+        Request request = new Request("izzudinanuar96@gmail.com", "createRaidRoom", parameter);
+
+        System.out.println("Sending request to client");
+        objectOutputStream.writeObject(request);
+        objectOutputStream.close();
+        System.out.println("Request sent");
+
+//        System.out.println("Receiving response");
+//        try {
+//            Response serverResponse = (Response) objectInputStream.readObject();
+//            System.out.println(serverResponse.getMessage());
+//            RaidRoom raidRoom = (RaidRoom) serverResponse.getObject();
+//            System.out.println(raidRoom.getLocation());
+//        } catch (ClassNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//
+//        objectInputStream.close();
+    }
+}
+
+class Request implements Serializable {
+    private final String email;
+    private final String action;
+    private final String[] parameter;
+
+    Request(String email, String action, String[] parameter) {
+        this.email = email;
+        this.action = action;
+        this.parameter = parameter;
+    }
+
+    public String getEmail()
+    {
+        return this.email;
+    }
+
+    public String getAction()
+    {
+        return this.action;
+    }
+
+    public String[] getParameter()
+    {
+        return this.parameter;
     }
 }

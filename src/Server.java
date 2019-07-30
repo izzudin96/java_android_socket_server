@@ -8,6 +8,7 @@ class Server {
     /**
      * Server entry point
      * @param args
+     * @throws IOException
      */
     public static void main(String args[]) throws IOException {
         int portNumber;
@@ -74,66 +75,44 @@ class ClientHandler implements Runnable {
         BufferedReader in = null;
 
         try {
-            String line;
+            InputStream inputStream = client.getInputStream();
+            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 
-            out = new PrintWriter(client.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+            Request clientRequest = (Request) objectInputStream.readObject();
+            processClientRequest(clientRequest);
 
-            while ((line = in.readLine()) != null) {
-                System.out.printf("Sent from the client: %s\n", line);
-                processClientRequest(line);
-
-//                System.out.println(DataStore.getInstance().raidRooms.size());
-
-                out.println(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        assert out != null;
-        out.close();
-        try {
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            client.close();
-        } catch (IOException e) {
+            System.out.println(clientRequest.getAction());
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    private void processClientRequest(String request) {
+    private void processClientRequest(Request request) throws IOException {
         System.out.println("Processing client request");
-        String parts[] = request.split("/");
 
-        System.out.println(parts[0]);
-        System.out.println(parts[1]);
-        System.out.println(parts[2]);
-        System.out.println(parts[3]);
+        if(request.getAction().equals("createRaidRoom")) {
+            RaidRoom raidRoom = new RaidRoom(request.getParameter()[0], request.getParameter()[1]);
+            raidRoom.addParticipant(new User(request.getEmail()));
+            raidRoom.setAdmin(raidRoom.userList.get(0));
 
-        if(parts[1].equals("createRaidRoom")) {
-            RaidRoom raidRoom = new RaidRoom(parts[2], parts[3]);
-            raidRoom.addParticipant(new User(parts[0]));
-
-            System.out.println("Room ID: " + raidRoom.getId());
-
+            System.out.println("Room created by "+ raidRoom.userList.get(0) + " Room id:" + raidRoom.getId() + " Location: " + raidRoom.getLocation() + " Time: " + raidRoom.getTime());
             DataStore.getInstance().addRaidRoom(raidRoom);
-        } else {
-            System.out.println(parts[1]);
+//            objectOutputStream.writeObject(new Response("Raid room created", raidRoom));
+        } else if(request.getAction().equals("getRaidRooms")) {
+
         }
 
         System.out.println(DataStore.getInstance().raidRooms.get(0).userList.get(0).getInfo());
     }
 }
 
-class RaidRoom {
+class RaidRoom implements Serializable {
     private static int count = 0;
     private final int id;
     private final String time;
     private final String location;
+
+    private User admin = null;
     public ArrayList<User> userList = new ArrayList<>();
 
     RaidRoom(String location, String time) {
@@ -147,12 +126,16 @@ class RaidRoom {
         return id;
     }
 
-    public String time() {
+    public String getTime() {
         return time;
     }
 
-    public String location() {
+    public String getLocation() {
         return location;
+    }
+
+    public void setAdmin(User admin) {
+        this.admin = admin;
     }
 
     public void addParticipant(User user) {
@@ -164,10 +147,11 @@ class RaidRoom {
     }
 }
 
-class User {
+class User implements Serializable {
     private final String email;
     private String latitude = "0";
     private String longitude = "0";
+    private static final long serialVersionUID = 1L;
 
     User(String email) {
         this.email = email;
@@ -176,6 +160,11 @@ class User {
     public void updateLocation(String latitude, String longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    @Override
+    public String toString() {
+        return this.email;
     }
 
     public String getInfo() {
@@ -195,5 +184,25 @@ class DataStore {
     public void addRaidRoom(RaidRoom room) {
         System.out.println("adding raid room to data store");
         raidRooms.add(room);
+    }
+}
+
+class Response {
+    private final String message;
+    private final Object object;
+
+    public Response(String message, Object object) {
+        this.message = message;
+        this.object = object;
+    }
+
+    public String getMessage()
+    {
+        return this.message;
+    }
+
+    public Object getObject()
+    {
+        return this.getObject();
     }
 }
