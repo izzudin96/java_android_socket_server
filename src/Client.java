@@ -3,7 +3,7 @@ import java.net.*;
 
 class Client {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
 
         if (args.length != 2) {
             System.out.println("Usage:  client <host> <port>");
@@ -29,25 +29,24 @@ class Client {
         OutputStream outputStream = socket.getOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
 
+        InputStream inputStream = socket.getInputStream();
+        ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+
         String[] parameter = {"Uni Mart", "11.30AM"};
         Request request = new Request("izzudinanuar96@gmail.com", "createRaidRoom", parameter);
 
         System.out.println("Sending request to client");
         objectOutputStream.writeObject(request);
-        objectOutputStream.close();
         System.out.println("Request sent");
 
-//        System.out.println("Receiving response");
-//        try {
-//            Response serverResponse = (Response) objectInputStream.readObject();
-//            System.out.println(serverResponse.getMessage());
-//            RaidRoom raidRoom = (RaidRoom) serverResponse.getObject();
-//            System.out.println(raidRoom.getLocation());
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//
-//        objectInputStream.close();
+        System.out.println("Receiving response");
+
+
+        System.out.println(objectInputStream.readObject());
+
+
+        objectOutputStream.close();
+        objectInputStream.close();
     }
 }
 

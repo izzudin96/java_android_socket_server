@@ -71,15 +71,18 @@ class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        PrintWriter out = null;
-        BufferedReader in = null;
-
         try {
             InputStream inputStream = client.getInputStream();
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 
+            OutputStream outputStream = client.getOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
             Request clientRequest = (Request) objectInputStream.readObject();
             processClientRequest(clientRequest);
+
+            User user = new User("izzudinanuar96@gmail.com");
+            objectOutputStream.writeObject(user);
 
             System.out.println(clientRequest.getAction());
         } catch (IOException | ClassNotFoundException e) {
@@ -97,7 +100,6 @@ class ClientHandler implements Runnable {
 
             System.out.println("Room created by "+ raidRoom.userList.get(0) + " Room id:" + raidRoom.getId() + " Location: " + raidRoom.getLocation() + " Time: " + raidRoom.getTime());
             DataStore.getInstance().addRaidRoom(raidRoom);
-//            objectOutputStream.writeObject(new Response("Raid room created", raidRoom));
         } else if(request.getAction().equals("getRaidRooms")) {
 
         }
