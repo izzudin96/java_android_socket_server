@@ -17,13 +17,14 @@ class Client {
         portNumber = Integer.parseInt(args[1]);
 
         for(int i = 0; i < 10; i++) {
-            sendCreateRaidRoomRequest();
+            sendCreateRaidRoomRequest(Integer.toString(i));
         }
 
         sendGetAllRaidRoomsRequest();
+        sendGetSingleRaidRoomRequest(6);
     }
 
-    public static void sendCreateRaidRoomRequest() throws IOException, ClassNotFoundException {
+    public static void sendCreateRaidRoomRequest(String location) throws IOException, ClassNotFoundException {
         // establish socket connection to server
         Socket socket;
         try {
@@ -44,7 +45,7 @@ class Client {
         InputStream inputStream = socket.getInputStream();
         ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 
-        Request request = new Request("izzudinanuar96@gmail.com", "createRaidRoom", new String[]{"Uni Mart", "11.30AM"});
+        Request request = new Request("izzudinanuar96@gmail.com", "createRaidRoom", new String[]{"Uni Mart" + location, "11.30AM"});
 
         System.out.println("Sending request to client");
         objectOutputStream.writeObject(request);
@@ -91,12 +92,50 @@ class Client {
 
         System.out.println("Receiving response");
         Response response = (Response) objectInputStream.readObject();
-        ArrayList<RaidRoom> raidRoom = (ArrayList<RaidRoom>) response.getObject();
+        ArrayList<RaidRoom> raidRooms = (ArrayList<RaidRoom>) response.getObject();
 
         System.out.println("Getting raid room location");
-        raidRoom.forEach(e -> {
+        raidRooms.forEach(e -> {
             System.out.println(e.getLocation());
         });
+
+        objectOutputStream.close();
+        objectInputStream.close();
+    }
+
+    public static void sendGetSingleRaidRoomRequest(Integer id) throws IOException, ClassNotFoundException
+    {
+        Socket socket;
+        try {
+            socket = new Socket(hostName, portNumber);
+        } catch (UnknownHostException e) {
+            System.out.println("Couldn't establish socket connection");
+            return;
+        } catch (IOException e) {
+            System.out.println("IO exception on attempting to connect socket");
+            return;
+        }
+
+        // write to socket using OutputStream
+        OutputStream outputStream = socket.getOutputStream();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
+        // receive response using InputStream
+        InputStream inputStream = socket.getInputStream();
+        ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+
+        Request request = new Request("izzudinanuar96@gmail.com", "getById", Integer.toString(id));
+
+        System.out.println("Sending request to server");
+        objectOutputStream.writeObject(request);
+        System.out.println("Request sent");
+
+        System.out.println("Receiving response");
+        Response response = (Response) objectInputStream.readObject();
+
+        System.out.println("Getting raid room with id " + id + " location");
+        RaidRoom raidRoom = (RaidRoom) response.getObject();
+        System.out.println(raidRoom.toString());
 
         objectOutputStream.close();
         objectInputStream.close();

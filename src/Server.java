@@ -1,4 +1,3 @@
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -104,14 +103,28 @@ class ClientHandler implements Runnable {
 
             Response response = new Response("Raid rooms fetched", raidRooms);
             objectOutputStream.writeObject(response);
+        } else if(request.getAction().equals("getById")) {
+            ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
+            int requestedId = Integer.parseInt(request.getParameter()[0]);
+            RaidRoom requestedRoom = null;
+
+            System.out.println("Getting raid room with ID: " + requestedId);
+            for(RaidRoom raidRoom : raidRooms) {
+                if(raidRoom.getId() == requestedId) {
+                    requestedRoom = raidRoom;
+                }
+            }
+
+            Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
+            objectOutputStream.writeObject(response);
         }
     }
 }
 
 class RaidRoom implements Serializable {
-    private static int count = 0;
     private final int id;
     private final String time;
+    private static int count = 0;
     private final String location;
 
     private User admin = null;
@@ -146,6 +159,11 @@ class RaidRoom implements Serializable {
 
     public String getParticipants() {
         return userList.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Room ID: " + getId() + " || Location: " + getLocation() + " || Time: " + getTime();
     }
 }
 
