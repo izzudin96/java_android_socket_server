@@ -86,91 +86,104 @@ class ClientHandler implements Runnable {
     private void processClientRequest(Request request, ObjectOutputStream objectOutputStream) throws IOException {
         System.out.println("Processing client request");
 
-        if(request.getAction().equals("createRaidRoom")) {
-            RaidRoom raidRoom = new RaidRoom(request.getParameter()[0], request.getParameter()[1]);
-            raidRoom.addParticipant(new User(request.getEmail()));
-            raidRoom.setAdmin(raidRoom.userList.get(0));
+        switch (request.getAction()) {
+            case "createRaidRoom": {
+                RaidRoom raidRoom = new RaidRoom(request.getParameter()[0], request.getParameter()[1]);
+                User user = DataStore.getInstance().findOrCreateUser(request.getEmail());
 
-            System.out.println("Room created by "+ raidRoom.userList.get(0) + " Room id:" + raidRoom.getId() + " Location: " + raidRoom.getLocation() + " Time: " + raidRoom.getTime());
-            DataStore.getInstance().addRaidRoom(raidRoom);
+                raidRoom.addParticipant(user);
+                raidRoom.setAdmin(raidRoom.userList.get(0));
 
-            System.out.println("Sending response to client");
+                System.out.println("Room created by " + raidRoom.userList.get(0) + " Room id:" + raidRoom.getId() + " Location: " + raidRoom.getLocation() + " Time: " + raidRoom.getTime());
+                DataStore.getInstance().addRaidRoom(raidRoom);
 
-            Response response = new Response("Raid room created", raidRoom);
-            objectOutputStream.writeObject(response);
-        } else if(request.getAction().equals("fetchAllRaidRoom")) {
-            ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
+                System.out.println("Sending response to client");
 
-            Response response = new Response("Raid rooms fetched", raidRooms);
-            objectOutputStream.writeObject(response);
-        } else if(request.getAction().equals("getRaidRoomById")) {
-            ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
-            int requestedId = Integer.parseInt(request.getParameter()[0]);
-            RaidRoom requestedRoom = null;
-
-            System.out.println("Getting raid room with ID: " + requestedId);
-            for(RaidRoom raidRoom : raidRooms) {
-                if(raidRoom.getId() == requestedId) {
-                    requestedRoom = raidRoom;
-                }
+                Response response = new Response("Raid room created", raidRoom);
+                objectOutputStream.writeObject(response);
+                break;
             }
+            case "fetchAllRaidRoom": {
+                ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
 
-            Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
-            objectOutputStream.writeObject(response);
-        } else if(request.getAction().equals("joinRoom")) {
-            ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
-            int requestedId = Integer.parseInt(request.getParameter()[0]);
-            System.out.println("Receive join room " + requestedId + " request");
-            RaidRoom requestedRoom = null;
-
-            System.out.println("Getting raid room with ID: " + requestedId);
-            for(RaidRoom raidRoom : raidRooms) {
-                if(raidRoom.getId() == requestedId) {
-                    requestedRoom = raidRoom;
-                }
+                Response response = new Response("Raid rooms fetched", raidRooms);
+                objectOutputStream.writeObject(response);
+                break;
             }
+            case "getRaidRoomById": {
+                ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
+                int requestedId = Integer.parseInt(request.getParameter()[0]);
+                RaidRoom requestedRoom = null;
 
-            boolean userExists = false;
-            for(User user : requestedRoom.userList) {
-                if(user.getEmail().equals(request.getEmail())) {
+                System.out.println("Getting raid room with ID: " + requestedId);
+                for (RaidRoom raidRoom : raidRooms) {
+                    if (raidRoom.getId() == requestedId) {
+                        requestedRoom = raidRoom;
+                    }
+                }
+
+                Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
+                objectOutputStream.writeObject(response);
+                break;
+            }
+            case "joinRoom": {
+                ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
+                int requestedId = Integer.parseInt(request.getParameter()[0]);
+                System.out.println("Receive join room " + requestedId + " request");
+                RaidRoom requestedRoom = null;
+
+                System.out.println("Getting raid room with ID: " + requestedId);
+                for (RaidRoom raidRoom : raidRooms) {
+                    if (raidRoom.getId() == requestedId) {
+                        requestedRoom = raidRoom;
+                    }
+                }
+
+                boolean userExists = false;
+                for (User user : requestedRoom.userList) {
+                    if (user.getEmail().equals(request.getEmail())) {
+                        user.updateLocation(request.getParameter()[1], request.getParameter()[2]);
+                        Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
+                        objectOutputStream.writeObject(response);
+                        userExists = true;
+                        break;
+                    }
+                }
+
+                if (!userExists) {
+                    User user = new User(request.getEmail());
                     user.updateLocation(request.getParameter()[1], request.getParameter()[2]);
-                    Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
-                    objectOutputStream.writeObject(response);
-                    userExists = true;
-                    break;
+                    requestedRoom.addParticipant(user);
                 }
+
+                Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
+                objectOutputStream.writeObject(response);
+                break;
             }
+            case "updateLocation": {
+                ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
+                int requestedId = Integer.parseInt(request.getParameter()[0]);
+                System.out.println("Updating location for " + request.getEmail() + " at room id " + requestedId);
+                RaidRoom requestedRoom = null;
 
-            if(!userExists) {
-                User user = new User(request.getEmail());
-                user.updateLocation(request.getParameter()[1], request.getParameter()[2]);
-                requestedRoom.addParticipant(user);
-            }
-
-            Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
-            objectOutputStream.writeObject(response);
-        } else if(request.getAction().equals("updateLocation")) {
-            ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
-            int requestedId = Integer.parseInt(request.getParameter()[0]);
-            System.out.println("Updating location for " + request.getEmail() + " at room id " + requestedId);
-            RaidRoom requestedRoom = null;
-
-            System.out.println("Getting raid room with ID: " + requestedId);
-            for(RaidRoom raidRoom : raidRooms) {
-                if(raidRoom.getId() == requestedId) {
-                    requestedRoom = raidRoom;
+                System.out.println("Getting raid room with ID: " + requestedId);
+                for (RaidRoom raidRoom : raidRooms) {
+                    if (raidRoom.getId() == requestedId) {
+                        requestedRoom = raidRoom;
+                    }
                 }
-            }
 
-            for(User user : requestedRoom.userList) {
-                if(user.getEmail().equals(request.getEmail())) {
-                    user.updateLocation(request.getParameter()[1], request.getParameter()[2]);
-                    System.out.println("User location updated");
+                for (User user : requestedRoom.userList) {
+                    if (user.getEmail().equals(request.getEmail())) {
+                        user.updateLocation(request.getParameter()[1], request.getParameter()[2]);
+                        System.out.println("User location updated");
+                    }
                 }
-            }
 
-            Response response = new Response("User location updated" + requestedId + " fetched", requestedRoom);
-            objectOutputStream.writeObject(response);
+                Response response = new Response("User location updated" + requestedId + " fetched", requestedRoom);
+                objectOutputStream.writeObject(response);
+                break;
+            }
         }
     }
 }
@@ -265,6 +278,7 @@ class User implements Serializable {
 class DataStore {
     static DataStore object = new DataStore();
     public ArrayList<RaidRoom> raidRooms = new ArrayList<>();
+    public ArrayList<User> users = new ArrayList<>();
 
     private DataStore() {}
     public static DataStore getInstance() {
@@ -272,8 +286,36 @@ class DataStore {
     }
 
     public void addRaidRoom(RaidRoom room) {
-        System.out.println("adding raid room to data store");
         raidRooms.add(room);
+    }
+
+    public User addUser(User user) {
+        System.out.println("Adding user to datastore");
+        users.add(user);
+
+        return getUser(user.getEmail());
+    }
+
+    public User getUser(String email) {
+        User foundUser = null;
+
+        for(User user : users) {
+            if(user.getEmail().equals(email)) {
+                foundUser = user;
+                break;
+            }
+        }
+
+        return foundUser;
+    }
+
+    public User findOrCreateUser(String email) {
+        if(getUser(email) == null) {
+            System.out.println("Creating new user...");
+            return addUser(new User(email));
+        } else {
+            return getUser(email);
+        }
     }
 }
 

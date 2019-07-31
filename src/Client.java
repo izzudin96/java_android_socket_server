@@ -26,6 +26,7 @@ class Client {
         sendJoinRaidRoomRequest("izzudin@gmail.com", 6,"-38.786864", "175.310597");
 
         sendUpdateLocationRequest("ivan@gmail.com", 6,"-40.786864", "768.310597");
+        sendUpdateLocationRequest("ivan@gmail.com", 6,"-25.786864", "500.310597");
     }
 
     public static void sendCreateRaidRoomRequest(String location) throws IOException, ClassNotFoundException {
