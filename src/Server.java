@@ -196,6 +196,7 @@ class RaidRoom implements Serializable {
 
     private User admin = null;
     public ArrayList<User> userList = new ArrayList<>();
+    public ArrayList<Message> messagesList = new ArrayList<>();
 
     RaidRoom(String location, String time) {
         this.location = location;
@@ -224,8 +225,8 @@ class RaidRoom implements Serializable {
         userList.add(user);
     }
 
-    public String getParticipants() {
-        return userList.toString();
+    public void addMessage(Message message) {
+        messagesList.add(message);
     }
 
     @Override
@@ -272,6 +273,22 @@ class User implements Serializable {
     @Override
     public String toString() {
         return "User ID: " + getId() + " || Email: " + getEmail() + " || Latitude: " + getLatitude() + " || Longitude: " + getLongitude();
+    }
+}
+
+class Message implements Serializable {
+    private final int id;
+    private final User user;
+    private final RaidRoom room;
+    private final String message;
+    private static int count = 0;
+
+    public Message(User user, RaidRoom room, String message) {
+        this.user = user;
+        this.room = room;
+        this.message = message;
+        count++;
+        this.id = count;
     }
 }
 
