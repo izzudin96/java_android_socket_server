@@ -1,3 +1,4 @@
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -98,11 +99,12 @@ class ClientHandler implements Runnable {
 
             Response response = new Response("Raid room created", raidRoom);
             objectOutputStream.writeObject(response);
-        } else if(request.getAction().equals("getRaidRooms")) {
+        } else if(request.getAction().equals("fetchAllRaidRoom")) {
+            ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
 
+            Response response = new Response("Raid rooms fetched", raidRooms);
+            objectOutputStream.writeObject(response);
         }
-
-        System.out.println(DataStore.getInstance().raidRooms.get(0).userList.get(0).getInfo());
     }
 }
 
