@@ -103,7 +103,7 @@ class ClientHandler implements Runnable {
 
             Response response = new Response("Raid rooms fetched", raidRooms);
             objectOutputStream.writeObject(response);
-        } else if(request.getAction().equals("getById")) {
+        } else if(request.getAction().equals("getRaidRoomById")) {
             ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
             int requestedId = Integer.parseInt(request.getParameter()[0]);
             RaidRoom requestedRoom = null;
@@ -115,6 +115,24 @@ class ClientHandler implements Runnable {
                 }
             }
 
+            Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
+            objectOutputStream.writeObject(response);
+        } else if(request.getAction().equals("joinRoom")) {
+            ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
+            int requestedId = Integer.parseInt(request.getParameter()[0]);
+            System.out.println("Receive join room " + requestedId + " request");
+            RaidRoom requestedRoom = null;
+
+            System.out.println("Getting raid room with ID: " + requestedId);
+            for(RaidRoom raidRoom : raidRooms) {
+                if(raidRoom.getId() == requestedId) {
+                    requestedRoom = raidRoom;
+                }
+            }
+
+            User user = new User(request.getEmail());
+            user.updateLocation(request.getParameter()[1], request.getParameter()[2]);
+            requestedRoom.addParticipant(user);
             Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
             objectOutputStream.writeObject(response);
         }
