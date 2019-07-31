@@ -130,10 +130,46 @@ class ClientHandler implements Runnable {
                 }
             }
 
-            User user = new User(request.getEmail());
-            user.updateLocation(request.getParameter()[1], request.getParameter()[2]);
-            requestedRoom.addParticipant(user);
+            boolean userExists = false;
+            for(User user : requestedRoom.userList) {
+                if(user.getEmail().equals(request.getEmail())) {
+                    user.updateLocation(request.getParameter()[1], request.getParameter()[2]);
+                    Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
+                    objectOutputStream.writeObject(response);
+                    userExists = true;
+                    break;
+                }
+            }
+
+            if(!userExists) {
+                User user = new User(request.getEmail());
+                user.updateLocation(request.getParameter()[1], request.getParameter()[2]);
+                requestedRoom.addParticipant(user);
+            }
+
             Response response = new Response("Raid with id " + requestedId + " fetched", requestedRoom);
+            objectOutputStream.writeObject(response);
+        } else if(request.getAction().equals("updateLocation")) {
+            ArrayList<RaidRoom> raidRooms = DataStore.getInstance().raidRooms;
+            int requestedId = Integer.parseInt(request.getParameter()[0]);
+            System.out.println("Updating location for " + request.getEmail() + " at room id " + requestedId);
+            RaidRoom requestedRoom = null;
+
+            System.out.println("Getting raid room with ID: " + requestedId);
+            for(RaidRoom raidRoom : raidRooms) {
+                if(raidRoom.getId() == requestedId) {
+                    requestedRoom = raidRoom;
+                }
+            }
+
+            for(User user : requestedRoom.userList) {
+                if(user.getEmail().equals(request.getEmail())) {
+                    user.updateLocation(request.getParameter()[1], request.getParameter()[2]);
+                    System.out.println("User location updated");
+                }
+            }
+
+            Response response = new Response("User location updated" + requestedId + " fetched", requestedRoom);
             objectOutputStream.writeObject(response);
         }
     }

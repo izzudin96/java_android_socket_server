@@ -23,6 +23,9 @@ class Client {
         sendGetAllRaidRoomsRequest();
         sendGetSingleRaidRoomRequest(6);
         sendJoinRaidRoomRequest("ivan@gmail.com", 6,"-37.786864", "175.310597");
+        sendJoinRaidRoomRequest("izzudin@gmail.com", 6,"-38.786864", "175.310597");
+
+        sendUpdateLocationRequest("ivan@gmail.com", 6,"-40.786864", "768.310597");
     }
 
     public static void sendCreateRaidRoomRequest(String location) throws IOException, ClassNotFoundException {
@@ -168,6 +171,44 @@ class Client {
         Request request = new Request(email, "joinRoom", Integer.toString(roomId), latitude, longitude);
         objectOutputStream.writeObject(request);
 
+        System.out.println("Receiving response");
+        Response response = (Response) objectInputStream.readObject();
+        System.out.println("Getting raid room with id " + roomId);
+        RaidRoom raidRoom = (RaidRoom) response.getObject();
+        System.out.println(raidRoom.toString());
+
+        System.out.println("Getting user lists for room id " + roomId);
+        ArrayList<User> users = raidRoom.userList;
+
+        users.forEach(e-> System.out.println(e.toString()));
+
+        objectOutputStream.close();
+        objectInputStream.close();
+    }
+
+    private static void sendUpdateLocationRequest(String email, int roomId, String latitude, String longitude) throws IOException, ClassNotFoundException {
+        Socket socket;
+        try {
+            socket = new Socket(hostName, portNumber);
+        } catch (UnknownHostException e) {
+            System.out.println("Couldn't establish socket connection");
+            return;
+        } catch (IOException e) {
+            System.out.println("IO exception on attempting to connect socket");
+            return;
+        }
+
+        // write to socket using OutputStream
+        OutputStream outputStream = socket.getOutputStream();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
+        // receive response using InputStream
+        InputStream inputStream = socket.getInputStream();
+        ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+
+        Request request = new Request(email, "updateLocation", Integer.toString(roomId), latitude, longitude);
+        objectOutputStream.writeObject(request);
+        System.out.println("HERE!!!!!");
         System.out.println("Receiving response");
         Response response = (Response) objectInputStream.readObject();
         System.out.println("Getting raid room with id " + roomId);
