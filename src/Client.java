@@ -96,7 +96,7 @@ class Client {
 
         System.out.println("Getting raid room location");
         raidRooms.forEach(e -> {
-            System.out.println(e.getLocation());
+            System.out.println(e.toString());
         });
 
         objectOutputStream.close();
@@ -136,6 +136,11 @@ class Client {
         System.out.println("Getting raid room with id " + id + " location");
         RaidRoom raidRoom = (RaidRoom) response.getObject();
         System.out.println(raidRoom.toString());
+
+        System.out.println("Getting user lists for room id " + id);
+        ArrayList<User> users = raidRoom.userList;
+
+        users.forEach(e-> System.out.println(e.toString()));
 
         objectOutputStream.close();
         objectInputStream.close();
