@@ -86,6 +86,7 @@ class ClientHandler implements Runnable {
 
     private void processClientRequest(Request request, ObjectOutputStream objectOutputStream) throws IOException {
         System.out.println("Processing client request");
+        System.out.println("Client action: " + request.getAction());
 
         switch (request.getAction()) {
             case "createRaidRoom": {
@@ -184,6 +185,9 @@ class ClientHandler implements Runnable {
                 Response response = new Response("User location updated" + requestedId + " fetched", requestedRoom);
                 objectOutputStream.writeObject(response);
                 break;
+            }
+            default: {
+                System.out.println("Unknown action");
             }
         }
     }
