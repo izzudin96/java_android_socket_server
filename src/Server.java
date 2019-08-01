@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import com.example.sockettest.*;
 
 class Server {
     /**
@@ -70,11 +71,11 @@ class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            InputStream inputStream = client.getInputStream();
-            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-
             OutputStream outputStream = client.getOutputStream();
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
+            InputStream inputStream = client.getInputStream();
+            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 
             Request clientRequest = (Request) objectInputStream.readObject();
             processClientRequest(clientRequest, objectOutputStream);
@@ -188,110 +189,6 @@ class ClientHandler implements Runnable {
     }
 }
 
-class RaidRoom implements Serializable {
-    private final int id;
-    private final String time;
-    private static int count = 0;
-    private final String location;
-
-    private User admin = null;
-    public ArrayList<User> userList = new ArrayList<>();
-    public ArrayList<Message> messagesList = new ArrayList<>();
-
-    RaidRoom(String location, String time) {
-        this.location = location;
-        this.time = time;
-        count++;
-        this.id = count;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setAdmin(User admin) {
-        this.admin = admin;
-    }
-
-    public void addParticipant(User user) {
-        userList.add(user);
-    }
-
-    public void addMessage(Message message) {
-        messagesList.add(message);
-    }
-
-    @Override
-    public String toString() {
-        return "Room ID: " + getId() + " || Location: " + getLocation() + " || Time: " + getTime();
-    }
-}
-
-class User implements Serializable {
-    private final int id;
-    private final String email;
-    private String latitude = "0";
-    private static int count = 0;
-    private String longitude = "0";
-    private static final long serialVersionUID = 1L;
-
-    User(String email) {
-        count++;
-        this.id = count;
-        this.email = email;
-    }
-
-    public String getEmail() {
-        return this.email;
-    }
-
-    public Integer getId() {
-        return this.id;
-    }
-
-    public void updateLocation(String latitude, String longitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-    }
-
-    public String getLatitude() {
-        return this.latitude;
-    }
-
-    public String getLongitude() {
-        return this.longitude;
-    }
-
-    @Override
-    public String toString() {
-        return "User ID: " + getId() + " || Email: " + getEmail() + " || Latitude: " + getLatitude() + " || Longitude: " + getLongitude();
-    }
-}
-
-class Message implements Serializable {
-    private final int id;
-    private final User user;
-    private final RaidRoom room;
-    private final String message;
-    private static int count = 0;
-
-    public Message(User user, RaidRoom room, String message) {
-        this.user = user;
-        this.room = room;
-        this.message = message;
-        count++;
-        this.id = count;
-    }
-}
-
 class DataStore {
     static DataStore object = new DataStore();
     public ArrayList<RaidRoom> raidRooms = new ArrayList<>();
@@ -333,25 +230,5 @@ class DataStore {
         } else {
             return getUser(email);
         }
-    }
-}
-
-class Response implements Serializable {
-    private final String message;
-    private final Object object;
-
-    public Response(String message, Object object) {
-        this.message = message;
-        this.object = object;
-    }
-
-    public String getMessage()
-    {
-        return this.message;
-    }
-
-    public Object getObject()
-    {
-        return this.object;
     }
 }

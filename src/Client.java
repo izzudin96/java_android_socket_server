@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import com.example.sockettest.*;
 
 class Client {
     private static String hostName;
@@ -59,7 +60,7 @@ class Client {
         System.out.println("Receiving response");
         Response response = (Response) objectInputStream.readObject();
         RaidRoom raidRoom = (RaidRoom) response.getObject();
-        System.out.println("Message from server: " + response.getMessage());
+        System.out.println("com.example.sockettest.Request.Message from server: " + response.getMessage());
         System.out.println("Raid room id: " + raidRoom.getId());
         System.out.println("Raid room location: " + raidRoom.getLocation());
         System.out.println("Raid room time: " + raidRoom.getTime());
@@ -223,32 +224,5 @@ class Client {
 
         objectOutputStream.close();
         objectInputStream.close();
-    }
-}
-
-class Request implements Serializable {
-    private final String email;
-    private final String action;
-    private final String[] parameter;
-
-    Request(String email, String action, String... parameter) {
-        this.email = email;
-        this.action = action;
-        this.parameter = parameter;
-    }
-
-    public String getEmail()
-    {
-        return this.email;
-    }
-
-    public String getAction()
-    {
-        return this.action;
-    }
-
-    public String[] getParameter()
-    {
-        return this.parameter;
     }
 }
