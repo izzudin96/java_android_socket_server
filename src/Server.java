@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
-import com.example.sockettest.*;
+import com.example.pokemeet.*;
 
 class Server {
     /**

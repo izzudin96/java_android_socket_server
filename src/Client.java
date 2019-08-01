@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
-import com.example.sockettest.*;
+import com.example.pokemeet.*;
 
 class Client {
     private static String hostName;
@@ -60,7 +60,7 @@ class Client {
         System.out.println("Receiving response");
         Response response = (Response) objectInputStream.readObject();
         RaidRoom raidRoom = (RaidRoom) response.getObject();
-        System.out.println("com.example.sockettest.Request.Message from server: " + response.getMessage());
+        System.out.println("com.example.pokemeet.Request.Message from server: " + response.getMessage());
         System.out.println("Raid room id: " + raidRoom.getId());
         System.out.println("Raid room location: " + raidRoom.getLocation());
         System.out.println("Raid room time: " + raidRoom.getTime());

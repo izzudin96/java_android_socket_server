@@ -1,4 +1,4 @@
-package com.example.sockettest;
+package com.example.pokemeet;
 
 import java.io.Serializable;
 
