@@ -23,11 +23,18 @@ class Client {
 
         sendGetAllRaidRoomsRequest();
         sendGetSingleRaidRoomRequest(6);
-        sendJoinRaidRoomRequest("ivan@gmail.com", 6,"-37.786864", "175.310597");
-        sendJoinRaidRoomRequest("izzudin@gmail.com", 6,"-38.786864", "175.310597");
 
-        sendUpdateLocationRequest("ivan@gmail.com", 6,"-40.786864", "768.310597");
-        sendUpdateLocationRequest("ivan@gmail.com", 6,"-25.786864", "500.310597");
+//        sendJoinRaidRoomRequest("ivan@gmail.com", 6,"-37.786864", "175.310597");
+//        sendJoinRaidRoomRequest("izzudin@gmail.com", 6,"-38.786864", "175.310597");
+
+//        sendUpdateLocationRequest("ivan@gmail.com", 6,"-40.786864", "768.310597");
+        sendUpdateLocationRequest("izzudinanuar96@gmail.com", 6,"-37.759862", "175.269991");
+        sendJoinRaidRoomRequest("kahokage@gmail.com", 6,"-37.780773", "175.325045");
+        sendJoinRaidRoomRequest("ivan123@gmail.com", 6,"-37.786864", "175.310597");
+        sendJoinRaidRoomRequest("azuxis@gmail.com", 6,"-37.779136", "175.322996");
+        sendJoinRaidRoomRequest("keanureaves@gmail.com", 6,"-37.777033", "175.316162");
+        sendJoinRaidRoomRequest("johnwick@gmail.com", 6,"-37.775710", "175.314242");
+        sendJoinRaidRoomRequest("messileo@gmail.com", 6,"-37.759124", "175.269508");
     }
 
     public static void sendCreateRaidRoomRequest(String location) throws IOException, ClassNotFoundException {
